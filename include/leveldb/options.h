@@ -17,8 +17,7 @@ class Env;
 class FilterPolicy;
 class Logger;
 class Snapshot;
-
-// DB contents are stored in a set of blocks, each of which holds a
+class DecompressAllocator;
 // sequence of key,value pairs.  Each block may be compressed before
 // being stored in a file.  The following enum describes which
 // compression method (if any) is used to compress a block.
@@ -173,6 +172,10 @@ struct LEVELDB_EXPORT ReadOptions {
   // not have been released).  If "snapshot" is null, use an implicit
   // snapshot of the state at the beginning of this read operation.
   const Snapshot* snapshot = nullptr;
+  
+  // Allocator to grab the (possibly tens of mb big) blocks of memory 
+  // where to decompress
+  DecompressAllocator* decompressAllocator = nullptr;
 };
 
 // Options that control write operations
