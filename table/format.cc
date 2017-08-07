@@ -166,9 +166,9 @@ Status ReadBlock(RandomAccessFile* file, const ReadOptions& options,
         // Large leveldb consumer has an enum conflict between zstd and
         // non-raw zlib, this is here to remedy that
         std::string buffer;
-          if (options.decompressAllocator) {
-            buffer = options.decompressAllocator->get();
-          }
+        if (options.decompress_allocator) {
+          buffer = options.decompress_allocator->get();
+        }
         if (port::Zlib_Uncompress(data, n, &buffer)) {
           auto ubuf = new char[buffer.size()];
           memcpy(ubuf, buffer.data(), buffer.size());
@@ -176,9 +176,9 @@ Status ReadBlock(RandomAccessFile* file, const ReadOptions& options,
           result->data = Slice(ubuf, buffer.size());
           result->heap_allocated = true;
           result->cachable = true;
-            if (options.decompressAllocator) {
-              options.decompressAllocator->release(std::move(buffer));
-            }
+          if (options.decompress_allocator) {
+            options.decompress_allocator->release(std::move(buffer));
+          }
           break;
         }
 #endif
@@ -199,8 +199,8 @@ Status ReadBlock(RandomAccessFile* file, const ReadOptions& options,
     }
     case kZlibRawCompression: {
       std::string buffer;
-      if (options.decompressAllocator) {
-        buffer = options.decompressAllocator->get();
+      if (options.decompress_allocator) {
+        buffer = options.decompress_allocator->get();
       }
       if (!port::Zlib_Uncompress(data, n, &buffer, true)) {
         delete[] buf;
@@ -212,8 +212,8 @@ Status ReadBlock(RandomAccessFile* file, const ReadOptions& options,
       result->data = Slice(ubuf,buffer.size());
       result->heap_allocated = true;
       result->cachable = true;
-      if (options.decompressAllocator) {
-	    options.decompressAllocator->release(std::move(buffer));
+      if (options.decompress_allocator) {
+	    options.decompress_allocator->release(std::move(buffer));
       }
       break;
     }
