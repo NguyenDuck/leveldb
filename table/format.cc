@@ -153,7 +153,7 @@ Status ReadBlock(RandomAccessFile* file, const ReadOptions& options,
       result->cachable = true;
       break;
     }
-    case kZlibCompression: {
+    case kZlibRawCompression: {
       std::string buffer;
       if (!port::Zlib_Uncompress(data, n, &buffer, true)) {
         delete[] buf;

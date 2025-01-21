@@ -184,7 +184,7 @@ void TableBuilder::WriteBlock(BlockBuilder* block, BlockHandle* handle) {
       break;
     }
 
-    case kZlibCompression: {
+    case kZlibRawCompression: {
       std::string* compressed = &r->compressed_output;
       if (port::Zlib_Compress(r->options.zlib_compression_level, raw.data(),
                                  raw.size(), compressed, true) &&
