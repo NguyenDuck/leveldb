@@ -33,6 +33,7 @@ endif (WIN32)
 option(LEVELDB_BUILD_TESTS "Build LevelDB's unit tests" ON)
 option(LEVELDB_BUILD_BENCHMARKS "Build LevelDB's benchmarks" ON)
 option(LEVELDB_INSTALL "Install LevelDB's header and library" ON)
+option(LEVELDB_PORT "Include LevelDB's port/port.h as a source" ON)
 
 include(CheckIncludeFile)
 check_include_file("unistd.h" HAVE_UNISTD_H)
@@ -153,7 +154,6 @@ target_sources(leveldb
     "db/write_batch_internal.h"
     "db/write_batch.cc"
     "port/port_stdcxx.h"
-    "port/port.h"
     "port/thread_annotations.h"
     "table/block_builder.cc"
     "table/block_builder.h"
@@ -210,6 +210,13 @@ target_sources(leveldb
     "${LEVELDB_PUBLIC_INCLUDE_DIR}/table.h"
     "${LEVELDB_PUBLIC_INCLUDE_DIR}/write_batch.h"
 )
+
+if(LEVELDB_PORT)
+  target_sources(leveldb
+    PRIVATE
+	  "port/port.h"
+)
+endif()
 
 if (WIN32)
   target_sources(leveldb
