@@ -34,6 +34,7 @@ option(LEVELDB_BUILD_TESTS "Build LevelDB's unit tests" ON)
 option(LEVELDB_BUILD_BENCHMARKS "Build LevelDB's benchmarks" ON)
 option(LEVELDB_INSTALL "Install LevelDB's header and library" ON)
 option(LEVELDB_PORT "Include LevelDB's port/port.h as a source" ON)
+option(LEVELDB_UTIL "Include Leveldb util." ON)
 
 include(CheckIncludeFile)
 check_include_file("unistd.h" HAVE_UNISTD_H)
@@ -296,10 +297,12 @@ endif(HAVE_TCMALLOC)
 find_package(Threads REQUIRED)
 target_link_libraries(leveldb Threads::Threads)
 
-add_executable(leveldbutil
-  "db/leveldbutil.cc"
-)
-target_link_libraries(leveldbutil leveldb)
+if(LEVELDB_UTIL)
+  add_executable(leveldbutil
+    "db/leveldbutil.cc"
+  )
+  target_link_libraries(leveldbutil leveldb)
+endif()
 
 if(LEVELDB_BUILD_TESTS)
   enable_testing()
