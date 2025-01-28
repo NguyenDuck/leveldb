@@ -154,7 +154,6 @@ target_sources(leveldb
     "db/version_set.h"
     "db/write_batch_internal.h"
     "db/write_batch.cc"
-    "port/port_stdcxx.h"
     "port/thread_annotations.h"
     "table/block_builder.cc"
     "table/block_builder.h"
@@ -216,6 +215,7 @@ if(LEVELDB_PORT)
   target_sources(leveldb
     PRIVATE
 	  "port/port.h"
+	  "port/port_stdcxx.h"
 )
 endif()
 
