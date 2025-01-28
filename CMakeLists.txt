@@ -35,6 +35,7 @@ option(LEVELDB_BUILD_BENCHMARKS "Build LevelDB's benchmarks" ON)
 option(LEVELDB_INSTALL "Install LevelDB's header and library" ON)
 option(LEVELDB_PORT "Include LevelDB's port/port.h as a source" ON)
 option(LEVELDB_UTIL "Include Leveldb util." ON)
+option(LEVELDB_INCLUDE ON)
 
 include(CheckIncludeFile)
 check_include_file("unistd.h" HAVE_UNISTD_H)
@@ -107,11 +108,12 @@ configure_file(
   "${PROJECT_BINARY_DIR}/${LEVELDB_PORT_CONFIG_DIR}/port_config.h"
 )
 
-include_directories(
-  "${PROJECT_BINARY_DIR}/include"
-  "."
-)
-
+if(LEVELDB_INCLUDE)
+	include_directories(
+	  "${PROJECT_BINARY_DIR}/include"
+	  "."
+	)
+endif(LEVELDB_INCLUDE)
 if(BUILD_SHARED_LIBS)
   # Only export LEVELDB_EXPORT symbols from the shared library.
   add_compile_options(-fvisibility=hidden)
@@ -240,12 +242,13 @@ target_sources(leveldb
     "helpers/memenv/memenv.h"
 )
 
-target_include_directories(leveldb
-  PUBLIC
-    $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>
-    $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
-)
-
+if(LEVELDB_INCLUDE)
+	target_include_directories(leveldb
+	  PUBLIC
+		$<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>
+		$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
+	)
+endif(LEVELDB_INCLUDE)
 set_target_properties(leveldb
   PROPERTIES VERSION ${PROJECT_VERSION} SOVERSION ${PROJECT_VERSION_MAJOR})
 
