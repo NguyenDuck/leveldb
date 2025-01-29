@@ -37,6 +37,7 @@ option(LEVELDB_PORT "Include LevelDB's port/port.h as a source" ON)
 option(LEVELDB_UTIL "Include Leveldb util." ON)
 option(LEVELDB_INCLUDE ON)
 option(LEVELDB_DISABLE_RTTI "Disable rtti for this project" ON)
+option(LEVELDB_ENV "Include LevelDB's enviroment files" ON)
 
 include(CheckIncludeFile)
 check_include_file("unistd.h" HAVE_UNISTD_H)
@@ -226,19 +227,21 @@ if(LEVELDB_PORT)
 )
 endif()
 
-if (WIN32)
-  target_sources(leveldb
-    PRIVATE
-      "util/env_windows.cc"
-      "util/windows_logger.h"
-  )
-else (WIN32)
-  target_sources(leveldb
-    PRIVATE
-      "util/env_posix.cc"
-      "util/posix_logger.h"
-  )
-endif (WIN32)
+if(LEVELDB_ENV)
+  if (WIN32)
+    target_sources(leveldb
+      PRIVATE
+        "util/env_windows.cc"
+        "util/windows_logger.h"
+    )
+  else (WIN32)
+    target_sources(leveldb
+      PRIVATE
+        "util/env_posix.cc"
+        "util/posix_logger.h"
+    )
+  endif (WIN32)
+endif(LEVELDB_ENV)
 
 # MemEnv is not part of the interface and could be pulled to a separate library.
 target_sources(leveldb
