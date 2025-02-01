@@ -209,7 +209,7 @@ inline bool Zlib_Compress(int level, const char* input, size_t length,
   const size_t BUFSIZE = 128 * 1024;
   unsigned char temp_buffer[BUFSIZE];
   // reserve enough memory to not reallocate on the fly
-  output->reserve(output->size() + compressBound(length));
+  output->reserve(compressBound(length));
   z_stream strm;
   strm.zalloc = 0;
   strm.zfree = 0;
@@ -217,14 +217,13 @@ inline bool Zlib_Compress(int level, const char* input, size_t length,
   strm.avail_in = (uint32_t)length;
   strm.next_out = temp_buffer;
   strm.avail_out = BUFSIZE;
-  auto res = deflateInit2(&strm, level, Z_DEFLATED, raw ? -15 : 15, 8,
+  int res = deflateInit2(&strm, level, Z_DEFLATED, raw ? -15 : 15, 8,
                           Z_DEFAULT_STRATEGY);
   if (res != Z_OK) {
     return false;
   }
-  int deflate_res = Z_OK;
   while (strm.avail_in != 0) {
-    int res = deflate(&strm, Z_NO_FLUSH);
+    res = deflate(&strm, Z_NO_FLUSH);
     if (res != Z_OK) {
       return false;
     }
@@ -234,19 +233,19 @@ inline bool Zlib_Compress(int level, const char* input, size_t length,
       strm.avail_out = BUFSIZE;
     }
   }
-  while (deflate_res == Z_OK) {
+  while (res == Z_OK) {
     if (strm.avail_out == 0) {
       output->append(temp_buffer, temp_buffer + BUFSIZE);
       strm.next_out = temp_buffer;
       strm.avail_out = BUFSIZE;
     }
-    deflate_res = deflate(&strm, Z_FINISH);
+    res = deflate(&strm, Z_FINISH);
   }
-  if (deflate_res != Z_STREAM_END) {
+  if (res != Z_STREAM_END) {
     return false;
   }
   output->append(temp_buffer, temp_buffer + BUFSIZE - strm.avail_out);
-  deflateEnd(&strm);
+  (void)deflateEnd(&strm);
   return true;
 #else
   // Silence compiler warnings about unused arguments.
@@ -278,28 +277,24 @@ inline bool Zlib_Uncompress(const char* input, size_t length,
   if (ret != Z_OK) {
     return false;
   }
-  /* decompress until deflate stream ends or end of file */
+  /* run inflate() on input until output buffer not full */
   do {
-    /* run inflate() on input until output buffer not full */
-    do {
-      strm.avail_out = CHUNK;
-      strm.next_out = out;
-      ret = ::inflate(&strm, Z_NO_FLUSH);
-      if (ret == Z_NEED_DICT) {
-        ret = Z_DATA_ERROR;
-      }
-      if (ret < 0) {
-        (void)inflateEnd(&strm);
-        return false;
-      }
-      have = CHUNK - strm.avail_out;
-      output->append((char*)out, have);
-    } while (strm.avail_out == 0);
-    /* done when inflate() says it's done */
-  } while (ret != Z_STREAM_END);
+    strm.avail_out = CHUNK;
+    strm.next_out = out;
+    ret = ::inflate(&strm, Z_NO_FLUSH);
+    if (ret == Z_NEED_DICT) {
+      ret = Z_DATA_ERROR;
+    }
+    if (ret < 0) {
+      (void)inflateEnd(&strm);
+      return false;
+    }
+    have = CHUNK - strm.avail_out;
+    output->append((char*)out, have);
+  } while (strm.avail_out == 0);
   /* clean up and return */
   (void)inflateEnd(&strm);
-  return ret == Z_STREAM_END ? true : false;
+  return ret == Z_STREAM_END;
 #else
   // Silence compiler warnings about unused arguments.
   (void)input;
