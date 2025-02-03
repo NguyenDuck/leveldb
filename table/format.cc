@@ -138,14 +138,8 @@ Status ReadBlock(RandomAccessFile* file, const ReadOptions& options,
     case kZstdCompression: {
       size_t ulength = 0;
       if (!port::Zstd_GetUncompressedLength(data, n, &ulength)) {
-		  // If compressed with zlib (not raw) the first byte will be 0x78
-		  // since we're using deflate and default LZ77 window size of 32K
-		  if (data[0] == 'x') {
-			  std::string buffer;
-			  if (!port::Zlib_Uncompress(data, n, &buffer)) {
-				delete[] buf;
-				return Status::Corruption("corrupted zstd or zlib compressed block");
-			  }
+          std::string buffer;
+		  if (port::Zlib_Uncompress(data, n, &buffer)) {
 			  auto ubuf = new char[buffer.size()];
 			  memcpy(ubuf, buffer.data(), buffer.size());
 			  delete[] buf;
