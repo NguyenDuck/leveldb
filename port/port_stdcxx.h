@@ -203,7 +203,7 @@ inline bool Zstd_Uncompress(const char* input, size_t length, char* output) {
 #endif  // HAVE_ZSTD
 }
 
-extern inline bool Zlib_Compress(int level, const char* input, size_t length,
+inline bool Zlib_Compress(int level, const char* input, size_t length,
                           std::string* output, uint8_t raw = 0) {
 #if HAVE_ZLIB
   const size_t BUFSIZE = 128 * 1024;
@@ -259,7 +259,7 @@ extern inline bool Zlib_Compress(int level, const char* input, size_t length,
 #endif  // HAVE_ZLIB
 }
 
-extern inline bool Zlib_Uncompress(const char* input, size_t length,
+inline bool Zlib_Uncompress(const char* input, size_t length,
                             std::string* output, uint8_t raw = 0)
 {
 #if HAVE_ZLIB
