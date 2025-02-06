@@ -116,9 +116,6 @@ bool Zlib_Compress(int level, const char* input, size_t input_length,
 // compressed data.
 // If raw is set the process will not look for a header, trailer,
 // and check value.
-//
-// REQUIRES: at least the first "n" bytes of output[] must be writable
-// where "n" is the length of uncompressed input.
 bool Zlib_Uncompress(const char* input_data, size_t input_length,
                      std::string* output, uint8_t raw = 0);
 

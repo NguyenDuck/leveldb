@@ -137,7 +137,7 @@ struct LEVELDB_EXPORT Options {
   int zstd_compression_level = 1;
 
   // Compression level for zlib.
-  // Currently only range [0,9] and -1. Default is -1 which is equivalent to 6.
+  // Currently only range [-1,9] is supported. Default is -1 which is equivalent to 6.
   int zlib_compression_level = -1;
 
   // EXPERIMENTAL: If true, append to existing MANIFEST and log files
