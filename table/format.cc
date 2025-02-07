@@ -173,9 +173,9 @@ Status ReadBlock(RandomAccessFile* file, const ReadOptions& options,
 			  result->data = Slice(ubuf, buffer.size());
 			  result->heap_allocated = true;
 			  result->cachable = true;
-              if (options.decompressAllocator) {
-	            options.decompressAllocator->release(std::move(buffer));
-              }
+			  if (options.decompressAllocator) {
+			    options.decompressAllocator->release(std::move(buffer));
+			  }
 			  break;
 		} else {
           delete[] buf;
@@ -221,5 +221,6 @@ Status ReadBlock(RandomAccessFile* file, const ReadOptions& options,
 
   return Status::OK();
 }
+
 
 }  // namespace leveldb
