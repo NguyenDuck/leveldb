@@ -176,7 +176,7 @@ struct LEVELDB_EXPORT ReadOptions {
   
   // Allocator to grab the (possibly tens of mb big) blocks of memory 
   // where to decompress
-  DecompressAllocator* decompress_allocator;
+  DecompressAllocator* decompress_allocator = nullptr;
 };
 
 // Options that control write operations
