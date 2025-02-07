@@ -8,19 +8,17 @@
 #include <string>
 
 namespace leveldb {
-	class DLLX DecompressAllocator {
-	public:
-		virtual ~DecompressAllocator();
+class DLLX DecompressAllocator {
+ public:
+  virtual ~DecompressAllocator();
+  virtual std::string get();
+  virtual void release(std::string&& string);
+  virtual void prune();
 
-		virtual std::string get();
-		virtual void release(std::string&& string);
-
-		virtual void prune();
-
-	protected:
-		std::mutex mutex;
-		std::vector<std::string> stack;
-	};
+ protected:
+  std::mutex mutex;
+  std::vector<std::string> stack;
+};
 }
 
 #endif
