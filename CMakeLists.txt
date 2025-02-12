@@ -36,7 +36,6 @@ option(LEVELDB_INSTALL "Install LevelDB's header and library" ON)
 option(LEVELDB_PORT "Include LevelDB's port/port.h as a source" ON)
 option(LEVELDB_UTIL "Include Leveldb util." ON)
 option(LEVELDB_INCLUDE ON)
-option(LEVELDB_DISABLE_RTTI "Disable rtti for this project" ON)
 option(LEVELDB_ENV "Include LevelDB's enviroment files" ON)
 
 include(CheckIncludeFile)
@@ -67,11 +66,7 @@ if(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
   add_definitions(-D_HAS_EXCEPTIONS=0)
 
   # Disable RTTI.
-  if(LEVELDB_DISABLE_RTTI)
-    #string(REGEX REPLACE "/GR" "" CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
-    #set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /GR-")
-	add_compile_options(/GR-)
-  endif(LEVELDB_DISABLE_RTTI)
+  add_compile_options(/GR-)
 else(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
   # Enable strict prototype warnings for C code in clang and gcc.
   if(NOT CMAKE_C_FLAGS MATCHES "-Wstrict-prototypes")
@@ -84,11 +79,7 @@ else(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
   add_compile_options(-fno-exceptions)
 
   # Disable RTTI.
-  if(LEVELDB_DISABLE_RTTI)
-    #string(REGEX REPLACE "-frtti" "" CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
-    #set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fno-rtti")
-    add_compile_options(-fno-rtti)
-  endif(LEVELDB_DISABLE_RTTI)
+  add_compile_options(-fno-rtti)
 endif(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
 
 # Test whether -Wthread-safety is available. See
