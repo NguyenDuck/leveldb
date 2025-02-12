@@ -33,6 +33,7 @@ endif (WIN32)
 option(LEVELDB_BUILD_TESTS "Build LevelDB's unit tests" ON)
 option(LEVELDB_BUILD_BENCHMARKS "Build LevelDB's benchmarks" ON)
 option(LEVELDB_INSTALL "Install LevelDB's header and library" ON)
+option(LEVELDB_ENV_IMPL "Include LevelDB's environment implementations" ON)
 
 include(CheckIncludeFile)
 check_include_file("unistd.h" HAVE_UNISTD_H)
@@ -210,19 +211,21 @@ target_sources(leveldb
     "${LEVELDB_PUBLIC_INCLUDE_DIR}/write_batch.h"
 )
 
-if (WIN32)
-  target_sources(leveldb
-    PRIVATE
-      "util/env_windows.cc"
-      "util/windows_logger.h"
-  )
-else (WIN32)
-  target_sources(leveldb
-    PRIVATE
-      "util/env_posix.cc"
-      "util/posix_logger.h"
-  )
-endif (WIN32)
+if(LEVELDB_ENV_IMPL)
+  if (WIN32)
+    target_sources(leveldb
+      PRIVATE
+        "util/env_windows.cc"
+        "util/windows_logger.h"
+    )
+  else (WIN32)
+    target_sources(leveldb
+      PRIVATE
+        "util/env_posix.cc"
+        "util/posix_logger.h"
+    )
+  endif (WIN32)
+endif(LEVELDB_ENV_IMPL)
 
 # MemEnv is not part of the interface and could be pulled to a separate library.
 target_sources(leveldb
@@ -396,11 +399,13 @@ if(LEVELDB_BUILD_TESTS)
   if(NOT BUILD_SHARED_LIBS)
     # TODO(costan): This test also uses
     #               "util/env_{posix|windows}_test_helper.h"
-    if (WIN32)
-      leveldb_test("util/env_windows_test.cc")
-    else (WIN32)
-      leveldb_test("util/env_posix_test.cc")
-    endif (WIN32)
+    if(LEVELDB_ENV_IMPL)
+      if (WIN32)
+        leveldb_test("util/env_windows_test.cc")
+      else (WIN32)
+        leveldb_test("util/env_posix_test.cc")
+      endif (WIN32)
+    endif(LEVELDB_ENV_IMPL)
   endif(NOT BUILD_SHARED_LIBS)
 endif(LEVELDB_BUILD_TESTS)
 
