@@ -37,6 +37,7 @@ option(LEVELDB_PORT "Include LevelDB's port/port.h as a source" ON)
 option(LEVELDB_UTIL "Include Leveldb util." ON)
 option(LEVELDB_INCLUDE ON)
 option(LEVELDB_ENV "Include LevelDB's enviroment files" ON)
+option(DISABLE_FLAGS ON)
 
 include(CheckIncludeFile)
 check_include_file("unistd.h" HAVE_UNISTD_H)
@@ -57,6 +58,32 @@ include(CheckCXXSymbolExists)
 check_cxx_symbol_exists(fdatasync "unistd.h" HAVE_FDATASYNC)
 check_cxx_symbol_exists(F_FULLFSYNC "fcntl.h" HAVE_FULLFSYNC)
 check_cxx_symbol_exists(O_CLOEXEC "fcntl.h" HAVE_O_CLOEXEC)
+
+if(DISABLE_FLAGS)
+if(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
+  # Disable C++ exceptions.
+  string(REGEX REPLACE "/EH[a-z]+" "" CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /EHs-c-")
+  add_definitions(-D_HAS_EXCEPTIONS=0)
+
+  # Disable RTTI.
+  string(REGEX REPLACE "/GR" "" CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /GR-")
+else(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
+  # Enable strict prototype warnings for C code in clang and gcc.
+  if(NOT CMAKE_C_FLAGS MATCHES "-Wstrict-prototypes")
+    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wstrict-prototypes")
+  endif(NOT CMAKE_C_FLAGS MATCHES "-Wstrict-prototypes")
+
+  # Disable C++ exceptions.
+  string(REGEX REPLACE "-fexceptions" "" CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fno-exceptions")
+
+  # Disable RTTI.
+  string(REGEX REPLACE "-frtti" "" CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fno-rtti")
+endif(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
+endif(DISABLE_FLAGS)
 
 # Test whether -Wthread-safety is available. See
 # https://clang.llvm.org/docs/ThreadSafetyAnalysis.html
@@ -190,38 +217,6 @@ target_sources(leveldb
     "${LEVELDB_PUBLIC_INCLUDE_DIR}/table.h"
     "${LEVELDB_PUBLIC_INCLUDE_DIR}/write_batch.h"
 )
-
-if(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
-  # Disable C++ exceptions.
-  #string(REGEX REPLACE "/EH[a-z]+" "" CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
-  #set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /EHs-c-")
-  #add_compile_options(/EHs-c-)
-  target_compile_options(leveldb PRIVATE /EHs-c-)
-  add_definitions(-D_HAS_EXCEPTIONS=0)
-
-  # Disable RTTI.
-  #string(REGEX REPLACE "/GR" "" CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
-  #set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /GR-")
-  #add_compile_options(/GR-)
-  target_compile_options(leveldb PRIVATE /GR-)
-else(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
-  # Enable strict prototype warnings for C code in clang and gcc.
-  if(NOT CMAKE_C_FLAGS MATCHES "-Wstrict-prototypes")
-    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wstrict-prototypes")
-  endif(NOT CMAKE_C_FLAGS MATCHES "-Wstrict-prototypes")
-
-  # Disable C++ exceptions.
-  #string(REGEX REPLACE "-fexceptions" "" CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
-  #set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fno-exceptions")
-  #add_compile_options(-fno-exceptions)
-  target_compile_options(leveldb PRIVATE -fno-exceptions)
-
-  # Disable RTTI.
-  #string(REGEX REPLACE "-frtti" "" CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
-  #set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fno-rtti")
-  #add_compile_options(-fno-rtti)
-  target_compile_options(leveldb PRIVATE -fno-rtti)
-endif(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
 
 if(LEVELDB_PORT)
   target_sources(leveldb
