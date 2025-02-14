@@ -33,11 +33,7 @@ endif (WIN32)
 option(LEVELDB_BUILD_TESTS "Build LevelDB's unit tests" ON)
 option(LEVELDB_BUILD_BENCHMARKS "Build LevelDB's benchmarks" ON)
 option(LEVELDB_INSTALL "Install LevelDB's header and library" ON)
-option(LEVELDB_PORT "Include LevelDB's port/port.h as a source" ON)
-option(LEVELDB_UTIL "Include Leveldb util." ON)
-option(LEVELDB_INCLUDE ON)
-option(LEVELDB_ENV "Include LevelDB's enviroment files" ON)
-option(DISABLE_FLAGS ON)
+option(LEVELDB_DISABLE_RTTI "Disable Rtti" ON)
 
 include(CheckIncludeFile)
 check_include_file("unistd.h" HAVE_UNISTD_H)
@@ -59,16 +55,17 @@ check_cxx_symbol_exists(fdatasync "unistd.h" HAVE_FDATASYNC)
 check_cxx_symbol_exists(F_FULLFSYNC "fcntl.h" HAVE_FULLFSYNC)
 check_cxx_symbol_exists(O_CLOEXEC "fcntl.h" HAVE_O_CLOEXEC)
 
-if(DISABLE_FLAGS)
 if(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
   # Disable C++ exceptions.
   string(REGEX REPLACE "/EH[a-z]+" "" CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /EHs-c-")
   add_definitions(-D_HAS_EXCEPTIONS=0)
 
-  # Disable RTTI.
-  string(REGEX REPLACE "/GR" "" CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /GR-")
+  if(LEVELDB_DISABLE_RTTI)
+    # Disable RTTI.
+    string(REGEX REPLACE "/GR" "" CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /GR-")
+  endif(LEVELDB_DISABLE_RTTI)
 else(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
   # Enable strict prototype warnings for C code in clang and gcc.
   if(NOT CMAKE_C_FLAGS MATCHES "-Wstrict-prototypes")
@@ -79,11 +76,12 @@ else(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
   string(REGEX REPLACE "-fexceptions" "" CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fno-exceptions")
 
-  # Disable RTTI.
-  string(REGEX REPLACE "-frtti" "" CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fno-rtti")
+  if(LEVELDB_DISABLE_RTTI)
+    # Disable RTTI.
+    string(REGEX REPLACE "-frtti" "" CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fno-rtti")
+  endif(LEVELDB_DISABLE_RTTI)
 endif(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
-endif(DISABLE_FLAGS)
 
 # Test whether -Wthread-safety is available. See
 # https://clang.llvm.org/docs/ThreadSafetyAnalysis.html
@@ -112,12 +110,11 @@ configure_file(
   "${PROJECT_BINARY_DIR}/${LEVELDB_PORT_CONFIG_DIR}/port_config.h"
 )
 
-if(LEVELDB_INCLUDE)
-  include_directories(
-    "${PROJECT_BINARY_DIR}/include"
-    "."
-	)
-endif(LEVELDB_INCLUDE)
+include_directories(
+  "${PROJECT_BINARY_DIR}/include"
+  "."
+)
+
 if(BUILD_SHARED_LIBS)
   # Only export LEVELDB_EXPORT symbols from the shared library.
   add_compile_options(-fvisibility=hidden)
@@ -160,6 +157,8 @@ target_sources(leveldb
     "db/version_set.h"
     "db/write_batch_internal.h"
     "db/write_batch.cc"
+    "port/port_stdcxx.h"
+    "port/port.h"
     "port/thread_annotations.h"
     "table/block_builder.cc"
     "table/block_builder.h"
@@ -218,29 +217,19 @@ target_sources(leveldb
     "${LEVELDB_PUBLIC_INCLUDE_DIR}/write_batch.h"
 )
 
-if(LEVELDB_PORT)
+if (WIN32)
   target_sources(leveldb
     PRIVATE
-	  "port/port.h"
-	  "port/port_stdcxx.h"
-)
-endif()
-
-if(LEVELDB_ENV)
-  if (WIN32)
-    target_sources(leveldb
-      PRIVATE
-        "util/env_windows.cc"
-        "util/windows_logger.h"
-    )
-  else (WIN32)
-    target_sources(leveldb
-      PRIVATE
-        "util/env_posix.cc"
-        "util/posix_logger.h"
-    )
-  endif (WIN32)
-endif(LEVELDB_ENV)
+      "util/env_windows.cc"
+      "util/windows_logger.h"
+  )
+else (WIN32)
+  target_sources(leveldb
+    PRIVATE
+      "util/env_posix.cc"
+      "util/posix_logger.h"
+  )
+endif (WIN32)
 
 # MemEnv is not part of the interface and could be pulled to a separate library.
 target_sources(leveldb
@@ -249,13 +238,12 @@ target_sources(leveldb
     "helpers/memenv/memenv.h"
 )
 
-if(LEVELDB_INCLUDE)
-	target_include_directories(leveldb
-	  PUBLIC
-		$<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>
-		$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
-	)
-endif(LEVELDB_INCLUDE)
+target_include_directories(leveldb
+  PUBLIC
+    $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>
+    $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
+)
+
 set_target_properties(leveldb
   PROPERTIES VERSION ${PROJECT_VERSION} SOVERSION ${PROJECT_VERSION_MAJOR})
 
