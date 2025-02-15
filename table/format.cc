@@ -138,16 +138,16 @@ Status ReadBlock(RandomAccessFile* file, const ReadOptions& options,
     case kZstdCompression: {
       size_t ulength = 0;
       if (!port::Zstd_GetUncompressedLength(data, n, &ulength)) {
-          std::string buffer;
-		  if (port::Zlib_Uncompress(data, n, &buffer)) {
-			  auto ubuf = new char[buffer.size()];
-			  memcpy(ubuf, buffer.data(), buffer.size());
-			  delete[] buf;
-			  result->data = Slice(ubuf, buffer.size());
-			  result->heap_allocated = true;
-			  result->cachable = true;
-			  break;
-		} else {
+        std::string buffer;
+        if (port::Zlib_Uncompress(data, n, &buffer)) {
+          auto ubuf = new char[buffer.size()];
+          memcpy(ubuf, buffer.data(), buffer.size());
+          delete[] buf;
+          result->data = Slice(ubuf, buffer.size());
+          result->heap_allocated = true;
+          result->cachable = true;
+          break;
+        } else {
           delete[] buf;
           return Status::Corruption("corrupted zstd compressed block length");
         }
