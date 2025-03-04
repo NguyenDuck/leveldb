@@ -34,6 +34,7 @@ option(LEVELDB_BUILD_TESTS "Build LevelDB's unit tests" ON)
 option(LEVELDB_BUILD_BENCHMARKS "Build LevelDB's benchmarks" ON)
 option(LEVELDB_INSTALL "Install LevelDB's header and library" ON)
 option(LEVELDB_DISABLE_RTTI "Disable Rtti" ON)
+option(LEVELDB_SUPPORT_LEGACY_ZLIB_ENUM "Legacy Zlib Support" OFF)
 
 include(CheckIncludeFile)
 check_include_file("unistd.h" HAVE_UNISTD_H)
@@ -249,6 +250,15 @@ target_compile_definitions(leveldb
     # Used by port/port.h.
     ${LEVELDB_PLATFORM_NAME}=1
 )
+
+if(LEVELDB_SUPPORT_LEGACY_ZLIB_ENUM)
+  target_compile_definitions(leveldb
+  PRIVATE
+    # Used in format.cc
+    LEVELDB_SUPPORT_LEGACY_ZLIB_ENUM
+  )
+endif(LEVELDB_SUPPORT_LEGACY_ZLIB_ENUM)
+
 if (NOT HAVE_CXX17_HAS_INCLUDE)
   target_compile_definitions(leveldb
     PRIVATE
