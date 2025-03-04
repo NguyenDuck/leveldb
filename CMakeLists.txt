@@ -250,6 +250,15 @@ target_compile_definitions(leveldb
     # Used by port/port.h.
     ${LEVELDB_PLATFORM_NAME}=1
 )
+
+if(LEVELDB_SUPPORT_LEGACY_ZLIB_ENUM)
+  target_compile_definitions(leveldb
+  PRIVATE
+    # Used in format.cc
+    LEVELDB_SUPPORT_LEGACY_ZLIB_ENUM
+  )
+endif(LEVELDB_SUPPORT_LEGACY_ZLIB_ENUM)
+
 if (NOT HAVE_CXX17_HAS_INCLUDE)
   target_compile_definitions(leveldb
     PRIVATE

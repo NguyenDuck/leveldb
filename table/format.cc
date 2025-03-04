@@ -138,7 +138,7 @@ Status ReadBlock(RandomAccessFile* file, const ReadOptions& options,
     case kZstdCompression: {
       size_t ulength = 0;
       if (!port::Zstd_GetUncompressedLength(data, n, &ulength)) {
-#if LEVELDB_SUPPORT_LEGACY_ZLIB_ENUM
+#if defined(LEVELDB_SUPPORT_LEGACY_ZLIB_ENUM)
         // Large leveldb consumer has an enum conflict between zstd and
         // non-raw zlib, this is here to remedy that
         std::string buffer;
