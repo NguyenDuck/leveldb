@@ -138,6 +138,8 @@ Status ReadBlock(RandomAccessFile* file, const ReadOptions& options,
     case kZstdCompression: {
       size_t ulength = 0;
       if (!port::Zstd_GetUncompressedLength(data, n, &ulength)) {
+#if LEVELDB_SUPPORT_LEGACY_ZLIB
+        //Compression type 2 could indicate an old block compressed with non-raw zlib
         std::string buffer;
         if (port::Zlib_Uncompress(data, n, &buffer)) {
           auto ubuf = new char[buffer.size()];
@@ -147,10 +149,10 @@ Status ReadBlock(RandomAccessFile* file, const ReadOptions& options,
           result->heap_allocated = true;
           result->cachable = true;
           break;
-        } else {
-          delete[] buf;
-          return Status::Corruption("corrupted zstd compressed block length");
         }
+#endif
+        delete[] buf;
+        return Status::Corruption("corrupted zstd compressed block length");
       }
       char* ubuf = new char[ulength];
       if (!port::Zstd_Uncompress(data, n, ubuf)) {
