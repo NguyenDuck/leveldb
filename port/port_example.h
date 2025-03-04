@@ -104,6 +104,21 @@ bool Zstd_GetUncompressedLength(const char* input, size_t length,
 // Zstd_GetUncompressedLength.
 bool Zstd_Uncompress(const char* input_data, size_t input_length, char* output);
 
+// Store the zlib compression of "input[0,input_length-1]" in *output.
+// Returns false if zlib is not supported by this port.
+// If raw is set this will perform raw compression with no header,
+// trailer, and will not compute a check value.
+bool Zlib_Compress(int level, const char* input, size_t input_length,
+                   std::string* output, uint8_t raw = 0);
+
+// Attempt to zlib uncompress input[0,input_length-1] into *output.
+// Returns true if successful, false if the input is invalid zlib
+// compressed data.
+// If raw is set the process will not look for a header, trailer,
+// and check value.
+bool Zlib_Uncompress(const char* input_data, size_t input_length,
+                     std::string* output, uint8_t raw = 0);
+
 // ------------------ Miscellaneous -------------------
 
 // If heap profiling is not supported, returns false.
