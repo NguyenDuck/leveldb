@@ -33,6 +33,7 @@ endif (WIN32)
 option(LEVELDB_BUILD_TESTS "Build LevelDB's unit tests" ON)
 option(LEVELDB_BUILD_BENCHMARKS "Build LevelDB's benchmarks" ON)
 option(LEVELDB_INSTALL "Install LevelDB's header and library" ON)
+option(LEVELDB_DISABLE_RTTI "Disable Rtti" ON)
 option(LEVELDB_SUPPORT_LEGACY_ZLIB "Legacy Zlib Support" OFF)
 
 include(CheckIncludeFile)
@@ -42,6 +43,7 @@ include(CheckLibraryExists)
 check_library_exists(crc32c crc32c_value "" HAVE_CRC32C)
 check_library_exists(snappy snappy_compress "" HAVE_SNAPPY)
 check_library_exists(zstd zstd_compress "" HAVE_ZSTD)
+check_library_exists(zlib deflate "" HAVE_ZLIB)
 check_library_exists(tcmalloc malloc "" HAVE_TCMALLOC)
 
 include(CheckCXXSymbolExists)
@@ -56,13 +58,13 @@ check_cxx_symbol_exists(O_CLOEXEC "fcntl.h" HAVE_O_CLOEXEC)
 
 if(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
   # Disable C++ exceptions.
-  string(REGEX REPLACE "/EH[a-z]+" "" CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /EHs-c-")
+  add_compile_options(/EHs-c-)
   add_definitions(-D_HAS_EXCEPTIONS=0)
 
-  # Disable RTTI.
-  string(REGEX REPLACE "/GR" "" CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /GR-")
+  if(LEVELDB_DISABLE_RTTI)
+    # Disable RTTI.
+    add_compile_options(/GR-)
+  endif(LEVELDB_DISABLE_RTTI)
 else(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
   # Enable strict prototype warnings for C code in clang and gcc.
   if(NOT CMAKE_C_FLAGS MATCHES "-Wstrict-prototypes")
@@ -70,12 +72,12 @@ else(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
   endif(NOT CMAKE_C_FLAGS MATCHES "-Wstrict-prototypes")
 
   # Disable C++ exceptions.
-  string(REGEX REPLACE "-fexceptions" "" CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fno-exceptions")
+  add_compile_options(-fno-exceptions)
 
-  # Disable RTTI.
-  string(REGEX REPLACE "-frtti" "" CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fno-rtti")
+  if(LEVELDB_DISABLE_RTTI)
+    # Disable RTTI.
+    add_compile_options(-fno-rtti)
+  endif(LEVELDB_DISABLE_RTTI)
 endif(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
 
 # Test whether -Wthread-safety is available. See
@@ -278,6 +280,9 @@ endif(HAVE_SNAPPY)
 if(HAVE_ZSTD)
   target_link_libraries(leveldb zstd)
 endif(HAVE_ZSTD)
+if(HAVE_ZLIB)
+  target_link_libraries(leveldb zlib)
+endif(HAVE_ZLIB)
 if(HAVE_TCMALLOC)
   target_link_libraries(leveldb tcmalloc)
 endif(HAVE_TCMALLOC)
