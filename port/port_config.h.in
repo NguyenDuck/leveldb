@@ -41,8 +41,8 @@
 #endif  // !defined(HAVE_ZLIB)
 
 // Define to 1 to enable Zlib legacy support.
-#if !defined(LEVELDB_SUPPORT_LEGACY_ZLIB)
-#cmakedefine01 LEVELDB_SUPPORT_LEGACY_ZLIB
-#endif  // !defined(LEVELDB_SUPPORT_LEGACY_ZLIB)
+#if !defined(LEVELDB_SUPPORT_LEGACY_ZLIB_ENUM)
+#cmakedefine01 LEVELDB_SUPPORT_LEGACY_ZLIB_ENUM
+#endif  // !defined(LEVELDB_SUPPORT_LEGACY_ZLIB_ENUM)
 
 #endif  // STORAGE_LEVELDB_PORT_PORT_CONFIG_H_
