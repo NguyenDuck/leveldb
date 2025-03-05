@@ -14,7 +14,7 @@
 
 namespace leveldb {
 
-DecompressAllocator::~DecompressAllocator() {}
+DecompressAllocator::~DecompressAllocator() = default;
 
 std::string DecompressAllocator::get() {
   std::string buffer;
