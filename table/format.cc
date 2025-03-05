@@ -213,7 +213,7 @@ Status ReadBlock(RandomAccessFile* file, const ReadOptions& options,
       result->heap_allocated = true;
       result->cachable = true;
       if (options.decompress_allocator) {
-	    options.decompress_allocator->release(std::move(buffer));
+        options.decompress_allocator->release(std::move(buffer));
       }
       break;
     }
