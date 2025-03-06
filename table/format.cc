@@ -10,8 +10,32 @@
 #include "table/block.h"
 #include "util/coding.h"
 #include "util/crc32c.h"
+#include "leveldb/decompress_allocator.h"
 
 namespace leveldb {
+
+DecompressAllocator::~DecompressAllocator() = default;
+
+std::string DecompressAllocator::get() {
+  std::string buffer;
+  std::lock_guard<std::mutex> lock(mutex);
+  if (!stack.empty()) {
+    buffer = std::move(stack.back());
+    buffer.clear();
+    stack.pop_back();
+  }
+  return buffer;
+}
+
+void DecompressAllocator::release(std::string&& string) {
+  std::lock_guard<std::mutex> lock(mutex);
+  stack.push_back(std::move(string));
+}
+
+void DecompressAllocator::prune() {
+  std::lock_guard<std::mutex> lock(mutex);
+  stack.clear();
+}
 
 void BlockHandle::EncodeTo(std::string* dst) const {
   // Sanity check that all fields have been set
@@ -142,6 +166,9 @@ Status ReadBlock(RandomAccessFile* file, const ReadOptions& options,
         // Large leveldb consumer has an enum conflict between zstd and
         // non-raw zlib, this is here to remedy that
         std::string buffer;
+        if (options.decompress_allocator) {
+          buffer = options.decompress_allocator->get();
+        }
         if (port::Zlib_Uncompress(data, n, &buffer)) {
           auto ubuf = new char[buffer.size()];
           memcpy(ubuf, buffer.data(), buffer.size());
@@ -149,6 +176,9 @@ Status ReadBlock(RandomAccessFile* file, const ReadOptions& options,
           result->data = Slice(ubuf, buffer.size());
           result->heap_allocated = true;
           result->cachable = true;
+          if (options.decompress_allocator) {
+            options.decompress_allocator->release(std::move(buffer));
+          }
           break;
         }
 #endif
@@ -169,6 +199,9 @@ Status ReadBlock(RandomAccessFile* file, const ReadOptions& options,
     }
     case kZlibRawCompression: {
       std::string buffer;
+      if (options.decompress_allocator) {
+        buffer = options.decompress_allocator->get();
+      }
       if (!port::Zlib_Uncompress(data, n, &buffer, true)) {
         delete[] buf;
         return Status::Corruption("corrupted zlib compressed block contents");
@@ -179,6 +212,9 @@ Status ReadBlock(RandomAccessFile* file, const ReadOptions& options,
       result->data = Slice(ubuf,buffer.size());
       result->heap_allocated = true;
       result->cachable = true;
+      if (options.decompress_allocator) {
+        options.decompress_allocator->release(std::move(buffer));
+      }
       break;
     }
     default:

@@ -17,6 +17,7 @@ class Env;
 class FilterPolicy;
 class Logger;
 class Snapshot;
+class DecompressAllocator;
 
 // DB contents are stored in a set of blocks, each of which holds a
 // sequence of key,value pairs.  Each block may be compressed before
@@ -173,6 +174,10 @@ struct LEVELDB_EXPORT ReadOptions {
   // not have been released).  If "snapshot" is null, use an implicit
   // snapshot of the state at the beginning of this read operation.
   const Snapshot* snapshot = nullptr;
+  
+  // Allocator to grab the (possibly tens of mb big) blocks of memory 
+  // where to decompress
+  DecompressAllocator* decompress_allocator = nullptr;
 };
 
 // Options that control write operations
