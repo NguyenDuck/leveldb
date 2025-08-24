@@ -1,0 +1,10 @@
+{
+  "name": "leveldb",
+  "version-string": "1.23.0",
+  "dependencies": [
+    "crc32c",
+    "snappy",
+    "zstd",
+    "zlib"
+  ]
+}
