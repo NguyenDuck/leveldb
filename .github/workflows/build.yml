@@ -69,13 +69,13 @@ jobs:
         with:
           doNotCache: false
 
-#      - name: Cache vcpkg dependencies
-#        uses: actions/cache@v3
-#        with:
-#          path: ${{ github.workspace }}/vcpkg
-#          key: ${{ runner.os }}-vcpkg-${{ hashFiles('**/vcpkg.json') }}
-#          restore-keys: |
-#            ${{ runner.os }}-vcpkg-
+      - name: Cache vcpkg dependencies
+        uses: actions/cache@v3
+        with:
+          path: ${{ github.workspace }}/vcpkg/installed
+          key: ${{ runner.os }}-vcpkg-${{ hashFiles('**/vcpkg.json') }}
+          restore-keys: |
+            ${{ runner.os }}-vcpkg-
 
       - name: Setup dependencies from vcpkg
         run: vcpkg install
@@ -92,7 +92,6 @@ jobs:
           -DCMAKE_BUILD_TYPE=${{ env.CMAKE_BUILD_TYPE }}
           -DCMAKE_INSTALL_PREFIX=${{ runner.temp }}/install_test/
           -DCMAKE_TOOLCHAIN_FILE=${{ env.VCPKG_ROOT }}/scripts/buildsystems/vcpkg.cmake
-          -DCMAKE_CXX_FLAGS="-fexceptions"
 
       - name: Build
         run: >-

@@ -486,6 +486,9 @@ int main() {
     if (HAVE_KYOTOCABINET)
         leveldb_benchmark("benchmarks/db_bench_tree_db.cc")
         target_link_libraries(db_bench_tree_db kyotocabinet)
+        set_target_properties(db_bench_tree_db PROPERTIES
+                COMPILE_FLAGS "-fexceptions"
+        )
     endif (HAVE_KYOTOCABINET)
 endif (LEVELDB_BUILD_BENCHMARKS)
 
