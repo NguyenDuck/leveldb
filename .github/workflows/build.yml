@@ -93,6 +93,12 @@ jobs:
           -DCMAKE_BUILD_TYPE=${{ env.CMAKE_BUILD_TYPE }}
           -DCMAKE_INSTALL_PREFIX=${{ runner.temp }}/install_test/
           -DCMAKE_TOOLCHAIN_FILE=${{ env.VCPKG_ROOT }}/scripts/buildsystems/vcpkg.cmake
+          -DCMAKE_CXX_FLAGS="-fexceptions"
+
+      - name: Debug build config
+        run: |
+          grep -r "fexceptions" "${{ env.CMAKE_BUILD_DIR }}" || echo "Flag not found!"
+          cat "${{ env.CMAKE_BUILD_DIR }}/CMakeFiles/db_bench_tree_db.dir/flags.make"
 
       - name: Build
         run: >-
