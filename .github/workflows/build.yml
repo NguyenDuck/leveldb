@@ -91,11 +91,6 @@ jobs:
           -DCMAKE_INSTALL_PREFIX=${{ runner.temp }}/install_test/
           -DCMAKE_TOOLCHAIN_FILE=${{ env.VCPKG_ROOT }}/scripts/buildsystems/vcpkg.cmake
 
-      - name: Debug build config
-        run: |
-          grep -r "fexceptions" "${{ env.CMAKE_BUILD_DIR }}" || echo "Flag not found!"
-          cat "${{ env.CMAKE_BUILD_DIR }}/CMakeFiles/db_bench_tree_db.dir/flags.make"
-
       - name: Build
         run: >-
           cmake --build "${{ env.CMAKE_BUILD_DIR }}"
