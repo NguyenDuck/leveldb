@@ -64,32 +64,34 @@ jobs:
         with:
           submodules: true
 
-      - name: Install vcpkg on Windows
-        if: runner.os == 'Windows'
+      - name: Setup vcpkg
         uses: lukka/run-vcpkg@v11
 
+      - name: Cache vcpkg dependencies
+        uses: actions/cache@v3
+        with:
+          path: ${{ github.workspace }}/vcpkg/installed
+          key: ${{ runner.os }}-vcpkg-${{ hashFiles('**/vcpkg.json') }}
+          restore-keys: |
+            ${{ runner.os }}-vcpkg-
+
+      - name: Setup dependencies from vcpkg
+        run: vcpkg install
+
       - name: Install dependencies on Linux
-        if: ${{ runner.os == 'Linux' }}
+        if: runner.os == 'Linux'
         # libgoogle-perftools-dev is temporarily removed from the package list
         # because it is currently broken on GitHub's Ubuntu 22.04.
         run: |
           sudo apt-get update
           sudo apt-get install libkyotocabinet-dev libsnappy-dev libsqlite3-dev
 
-      - name: Generate build config (Windows)
-        if: runner.os == 'Windows'
+      - name: Generate build config
         run: >
           cmake -S "${{ github.workspace }}" -B "${{ env.CMAKE_BUILD_DIR }}"
           -DCMAKE_BUILD_TYPE=${{ env.CMAKE_BUILD_TYPE }}
           -DCMAKE_INSTALL_PREFIX=${{ runner.temp }}/install_test/
           -DCMAKE_TOOLCHAIN_FILE=${{ env.VCPKG_ROOT }}/scripts/buildsystems/vcpkg.cmake
-
-      - name: Generate build config (Linux/macOS)
-        if: runner.os != 'Windows'
-        run: >
-          cmake -S "${{ github.workspace }}" -B "${{ env.CMAKE_BUILD_DIR }}"
-          -DCMAKE_BUILD_TYPE=${{ env.CMAKE_BUILD_TYPE }}
-          -DCMAKE_INSTALL_PREFIX=${{ runner.temp }}/install_test/
 
       - name: Build
         run: >-
