@@ -13,10 +13,9 @@ RUN apt-get update && apt-get install -y \
     pkg-config \
     && rm -rf /var/lib/apt/lists/*
 
-WORKDIR /opt
 RUN git clone https://github.com/microsoft/vcpkg.git \
     && ./vcpkg/bootstrap-vcpkg.sh
 
-ENV PATH="/opt/vcpkg:${PATH}"
+ENV PATH="${PATH}:./vcpkg"
 
 RUN vcpkg install crc32c snappy zlib zstd
