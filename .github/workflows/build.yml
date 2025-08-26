@@ -58,6 +58,7 @@ jobs:
         startsWith(matrix.os, 'windows') && '{0}\build\{1}\' || '{0}/build/',
         github.workspace,
         matrix.optimized && 'RelWithDebInfo' || 'Debug') }}
+      CXXFLAGS: -fexceptions
 
     steps:
       - uses: actions/checkout@v2
