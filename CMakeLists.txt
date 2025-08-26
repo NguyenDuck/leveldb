@@ -71,8 +71,10 @@ else (CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
         set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wstrict-prototypes")
     endif (NOT CMAKE_C_FLAGS MATCHES "-Wstrict-prototypes")
 
-    # Disable C++ exceptions.
-    add_compile_options(-fno-exceptions)
+    if (NOT CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+        # Disable C++ exceptions.
+        add_compile_options(-fno-exceptions)
+    endif()
 
     if (LEVELDB_DISABLE_RTTI)
         # Disable RTTI.
